@@ -63,7 +63,7 @@ pub(crate) fn update_record(
         },
     )?;
 
-    Ok(update_a_record(
+    update_a_record(
         &api_client,
         &dns::UpdateDnsRecord {
             zone_identifier,
@@ -75,13 +75,11 @@ pub(crate) fn update_record(
                 content: new_content,
             },
         },
-    )?)
+    )
 }
 
 #[cfg(test)]
 mod tests {
-
-    use super::*;
 
     #[test]
     fn valid_get_record() {

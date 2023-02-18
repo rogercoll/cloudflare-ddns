@@ -5,7 +5,7 @@ pub struct BlockingClient {
     client: reqwest::blocking::Client,
 }
 
-trait GetBlocking {
+pub(crate) trait GetBlocking {
     fn get(&self, url: &str) -> Result<String, reqwest::Error>;
 }
 
