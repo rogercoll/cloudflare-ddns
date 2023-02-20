@@ -1,0 +1,10 @@
+FROM docker.io/rust:latest AS builder
+COPY . .
+RUN cargo build
+
+FROM debian:buster-slim
+RUN apt-get update \
+    && apt-get install -y ca-certificates pkg-config libssl-dev
+
+COPY --from=builder ./target/debug/main ./target/debug/main
+CMD ["/target/debug/main"]

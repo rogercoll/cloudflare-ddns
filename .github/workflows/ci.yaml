@@ -51,3 +51,26 @@ jobs:
         with:
           command: test
           args: --verbose
+
+  image_build:
+    name: Test image can build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install qemu dependency
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-user-static
+
+      - name: Build image
+        id: build-image
+        uses: redhat-actions/buildah-build@v2
+        with:
+          image: cloudflare-ddns
+          tags: latest
+          platforms: linux/amd64, linux/arm/v7
+          containerfiles: |
+            build/container/Containerfile
