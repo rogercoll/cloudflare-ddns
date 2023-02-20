@@ -1,5 +1,7 @@
 use std::net::IpAddr;
 
+use crate::result::FetchPublicIPError;
+
 #[derive(Default)]
 pub struct BlockingClient {
     client: reqwest::blocking::Client,
@@ -19,9 +21,14 @@ impl GetBlocking for BlockingClient {
 pub(crate) fn get_public_ip<Client: GetBlocking>(
     client: Client,
     url: &str,
-) -> Result<IpAddr, reqwest::Error> {
-    let ip = client.get(url)?;
-    Ok(ip.parse().unwrap())
+) -> Result<IpAddr, FetchPublicIPError> {
+    let parsed_json: serde_json::Value = serde_json::from_str(&client.get(url)?)?;
+    let ip = parsed_json["ip"]
+        .as_str()
+        .ok_or(FetchPublicIPError::NoIPKey)?;
+    Ok(ip
+        .parse()
+        .map_err(|err| FetchPublicIPError::InvalidIPAddress(format!("{}", err)))?)
 }
 
 #[cfg(test)]
@@ -44,7 +51,7 @@ mod tests {
     #[test]
     fn test_ipv4() {
         let client = MockClient {
-            ip: "1.1.1.1".to_string(),
+            ip: r#"{"ip": "1.1.1.1"}"#.to_string(),
         };
 
         assert_eq!(
@@ -54,9 +61,21 @@ mod tests {
     }
 
     #[test]
+    fn test_invalid_ipv4() {
+        let client = MockClient {
+            ip: r#"{"ip": "1.1.1.1.1"}"#.to_string(),
+        };
+
+        assert!(matches!(
+            get_public_ip(client, "any"),
+            Err(FetchPublicIPError::InvalidIPAddress(_))
+        ));
+    }
+
+    #[test]
     fn test_ipv6() {
         let client = MockClient {
-            ip: "2001:0db8:85a3:0000:0000:8a2e:0370:7334".to_string(),
+            ip: r#"{"ip": "2001:0db8:85a3:0000:0000:8a2e:0370:7334"}"#.to_string(),
         };
 
         assert_eq!(

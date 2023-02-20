@@ -8,15 +8,22 @@ use cloudflare::{
 fn get_record<ApiClientType: ApiClient>(
     api_client: &ApiClientType,
     list_dns_record: &dns::ListDnsRecords,
+    new_content: &dns::DnsContent,
 ) -> Result<DnsRecord, CloudflareError> {
-    let mut response = api_client
+    let response = api_client
         .request(list_dns_record)
         .map_err(CloudflareError::ApiError)?;
 
-    if response.result.len() != 1 {
+    // move to drain_filter once stable
+    let (mut drained, _): (Vec<_>, Vec<_>) = response.result.into_iter().partition(|record| {
+        std::mem::discriminant(&record.content) == std::mem::discriminant(new_content)
+    });
+
+    if drained.len() != 1 {
         return Err(CloudflareError::MoreThanOneRecordFound);
     }
-    Ok(response.result.remove(0))
+
+    Ok(drained.remove(0))
 }
 
 fn update_a_record<ApiClientType: ApiClient>(
@@ -61,7 +68,13 @@ pub(crate) fn update_record(
                 search_match: None,
             },
         },
+        &new_content,
     )?;
+
+    // if same content, no update needed
+    // if record.content == new_content {
+    //     Ok(())
+    // }
 
     update_a_record(
         &api_client,
