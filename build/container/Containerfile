@@ -6,5 +6,5 @@ FROM debian:buster-slim
 RUN apt-get update \
     && apt-get install -y ca-certificates pkg-config libssl-dev
 
-COPY --from=builder ./target/debug/main ./target/debug/main
-CMD ["/target/debug/main"]
+COPY --from=builder ./target/debug/cloudflare-ddns ./target/debug/cloudflare-ddns
+CMD ["/target/debug/cloudflare-ddns"]

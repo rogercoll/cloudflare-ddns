@@ -1,14 +1,16 @@
+use std::time::Duration;
+
 use argh::FromArgs;
 use cloudflareddns::Updater;
 
 #[derive(FromArgs)]
-/// Cloudflare ddns configuration
+/// Cloudflare ddns tool configuration
 struct Config {
     /// zone ID of the domain
     #[argh(option, short = 'z')]
     zone_id: String,
 
-    /// cloudflare token
+    /// cloudflare API token
     #[argh(option, short = 't')]
     token: String,
 
@@ -19,6 +21,10 @@ struct Config {
     /// url to fetch the public ip from
     #[argh(option)]
     ip_checker: Option<String>,
+
+    /// seconds interval for long running execution
+    #[argh(option, short = 'l')]
+    long_running: Option<u64>,
 }
 
 fn main() {
@@ -29,7 +35,16 @@ fn main() {
         None => Updater::default(),
     };
 
-    updater
-        .update(&conf.token, &conf.zone_id, &conf.record_name)
-        .unwrap();
+    if let Some(interval) = conf.long_running {
+        loop {
+            updater
+                .update(&conf.token, &conf.zone_id, &conf.record_name)
+                .unwrap();
+            std::thread::sleep(Duration::from_secs(interval))
+        }
+    } else {
+        updater
+            .update(&conf.token, &conf.zone_id, &conf.record_name)
+            .unwrap();
+    }
 }
