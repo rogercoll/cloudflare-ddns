@@ -10,9 +10,8 @@ coverage:
         # Avoid false negatives
         threshold: 1%
 
-# Test files aren't important for coverage
 ignore:
-  - "tests"
+  - "src/bin"
 
 # Make comments less noisy
 comment:
