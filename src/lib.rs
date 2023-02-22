@@ -3,6 +3,8 @@ use ip::get_public_ip;
 use record::update_record;
 use std::error::Error;
 
+use crate::record::new_client;
+
 mod ip;
 mod record;
 mod result;
@@ -42,7 +44,13 @@ impl Updater {
             std::net::IpAddr::V4(ip) => dns::DnsContent::A { content: ip },
         };
 
-        let result_id = update_record(token, zone_identifier, dns_record_name, record_content)?;
+        let http_client = new_client(token)?;
+        let result_id = update_record(
+            &http_client,
+            zone_identifier,
+            dns_record_name,
+            record_content,
+        )?;
 
         println!("[SUCCESS]: Record updated - {}", result_id);
 
