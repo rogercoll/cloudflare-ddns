@@ -7,4 +7,11 @@ RUN apt-get update \
     && apt-get install -y ca-certificates pkg-config libssl-dev
 
 COPY --from=builder ./target/debug/cloudflare-ddns ./target/debug/cloudflare-ddns
-CMD ["/target/debug/cloudflare-ddns"]
+COPY --from=builder ./build/container/init.sh ./init.sh
+
+ENV TOKEN=""
+ENV RECORD_NAME=""
+ENV ZONE_ID=""
+ENV LONG_RUNNING=""
+
+ENTRYPOINT ./init.sh

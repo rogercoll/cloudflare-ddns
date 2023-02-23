@@ -35,6 +35,7 @@ fn main() {
         None => Updater::default(),
     };
 
+    // TODO: add ctrl handler
     if let Some(interval) = conf.long_running {
         loop {
             updater
