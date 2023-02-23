@@ -39,7 +39,9 @@ Options:
 
 ### Container
 
-unimplemented!()
+```bash
+ $ podman run -e TOKEN=123 -e RECORD_NAME=example.com -e ZONE_ID=456 -e LONG_RUNNING=20 docker.io/coll97/cloudflare-ddns
+```
 
 ## DNS Record type support
 
