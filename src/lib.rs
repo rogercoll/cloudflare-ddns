@@ -5,6 +5,9 @@ use std::error::Error;
 
 use crate::record::new_client;
 
+#[macro_use]
+extern crate log;
+
 mod ip;
 mod record;
 mod result;
@@ -33,11 +36,13 @@ impl Updater {
         zone_identifier: &str,
         dns_record_name: &str,
     ) -> Result<(), Box<dyn Error>> {
+        env_logger::init();
+
         let ip_client = ip::BlockingClient::default();
 
         let current_ip = get_public_ip(ip_client, &self.fetch_public_ip_url)?;
 
-        println!("[INFO]: Udating record name to - {}", current_ip);
+        debug!("[INFO]: Udating record name to - {}", current_ip);
 
         let record_content = match current_ip {
             std::net::IpAddr::V6(ip) => dns::DnsContent::AAAA { content: ip },
@@ -52,7 +57,7 @@ impl Updater {
             record_content,
         )?;
 
-        println!("[SUCCESS]: Record updated - {}", result_id);
+        info!("[SUCCESS]: Record updated - {}", result_id);
 
         Ok(())
     }
