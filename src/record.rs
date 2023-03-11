@@ -98,7 +98,7 @@ pub(crate) fn update_record<ApiClientType: ApiClient>(
             },
         )
     } else {
-        println!("[INFO] DNS record up-to-date");
+        debug!("DNS record up-to-date");
         Ok(record.id)
     }
 }

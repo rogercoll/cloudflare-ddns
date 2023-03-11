@@ -1,7 +1,7 @@
 use cloudflare::endpoints::dns;
 use ip::get_public_ip;
 use record::update_record;
-use std::error::Error;
+use std::{error::Error, sync::Once};
 
 use crate::record::new_client;
 
@@ -11,6 +11,12 @@ extern crate log;
 mod ip;
 mod record;
 mod result;
+
+static INIT_LOGGER: Once = Once::new();
+
+fn init_logger() {
+    INIT_LOGGER.call_once(|| env_logger::init())
+}
 
 pub struct Updater {
     fetch_public_ip_url: String,
@@ -36,13 +42,13 @@ impl Updater {
         zone_identifier: &str,
         dns_record_name: &str,
     ) -> Result<(), Box<dyn Error>> {
-        env_logger::init();
+        init_logger();
 
         let ip_client = ip::BlockingClient::default();
 
         let current_ip = get_public_ip(ip_client, &self.fetch_public_ip_url)?;
 
-        debug!("[INFO]: Udating record name to - {}", current_ip);
+        debug!("Udating record name to - {}", current_ip);
 
         let record_content = match current_ip {
             std::net::IpAddr::V6(ip) => dns::DnsContent::AAAA { content: ip },
@@ -57,7 +63,7 @@ impl Updater {
             record_content,
         )?;
 
-        info!("[SUCCESS]: Record updated - {}", result_id);
+        info!("Record updated - {}", result_id);
 
         Ok(())
     }
