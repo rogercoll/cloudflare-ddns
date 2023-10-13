@@ -8,7 +8,7 @@ authors = ["Roger Neck"]
 
 [dependencies]
 argh = "0.1.10"
-cloudflare = "0.10.1"
+cloudflare = "0.11.0"
 crossbeam-channel = "0.5.6"
 ctrlc = "3.2.5"
 reqwest = "0.11.14"
